@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  minio:
+    image: minio/minio:RELEASE.2024-10-13T01-07-27Z # Используйте актуальную версию
+    container_name: minio_file_exchange
+    ports:
+      - "9000:9000"
+      - "9001:9001" # Консоль
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+  app:
+    build: . # Предполагает, что Dockerfile находится в корне проекта
+    container_name: file_exchange_app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - minio
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/file_exchange_db
+      SPRING_DATASOURCE_USERNAME: your_db_user
+      SPRING_DATASOURCE_PASSWORD: your_db_password
+      APP_S3_ENDPOINT: http://minio:9000
+      APP_S3_ACCESS_KEY: minioadmin
+      APP_S3_SECRET_KEY: minioadmin
+    # volumes:
+    #   - ~/.m2:/root/.m2 # Для кеширования зависимостей Maven (Gradle использует другой кеш)
+
+  db:
+    image: postgres:15
+    container_name: file_exchange_db
+    environment:
+      POSTGRES_DB: file_exchange_db
+      POSTGRES_USER: your_db_user
+      POSTGRES_PASSWORD: your_db_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  minio_data:
+  postgres_data:
