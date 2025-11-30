@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: file-exchange-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/file_exchange_db
+    driver-class-name: org.postgresql.Driver
+    username: db_user
+    password: db_password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true # Для отладки SQL
+  thymeleaf:
+    cache: false # Для разработки
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+app:
+  s3:
+    bucket-name: file-exchange-service
+    endpoint: http://localhost:9000
+    access-key: minioadmin
+    secret-key: minioadmin
+    region: EU_SOUTH_1
+
+logging:
+  level:
+    software.amazon.awssdk: DEBUG
+    com.example.fileexchange: DEBUG
+
+
+aws:
+  region: EU_SOUTH_1
+
+AWS_REGION: EU_SOUTH_1

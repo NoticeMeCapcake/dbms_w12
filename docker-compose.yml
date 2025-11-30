@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  minio:
+    image: minio/minio
+    container_name: minio_file_exchange
+    ports:
+      - "9000:9000"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server start
+    volumes:
+      - minio_data:/data
+
+  db:
+    image: postgres
+    container_name: file_exchange_db
+    environment:
+      POSTGRES_DB: file_exchange_db
+      POSTGRES_USER: db_user
+      POSTGRES_PASSWORD: db_password
+    ports:
+      - "5432:5432"
+volumes:
+  minio_data:
