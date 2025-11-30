@@ -22,8 +22,8 @@ public class WebController {
 
     @GetMapping
     public String index(Model model) {
-        model.addAttribute("apiKey", "user-12345"); // Пример API ключа для UI
-        return "index"; // Thymeleaf template
+        model.addAttribute("apiKey", "user-12345");
+        return "index";
     }
 
     @PostMapping("/upload")

@@ -50,7 +50,7 @@ public class FileController {
             @PathVariable String fileId,
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody Map<String, Integer> requestBody) {
-        int expiresIn = requestBody.getOrDefault("expires_in", 3600); // по умолчанию 1 час
+        int expiresIn = requestBody.getOrDefault("expires_in", 3600);
         log.info("Generating share link for file ID: {} and API Key: {}, expires in: {}s", fileId, apiKey, expiresIn);
         String url = fileService.generatePresignedUrl(fileId, apiKey, expiresIn);
         return ResponseEntity.ok(Map.of("url", url));

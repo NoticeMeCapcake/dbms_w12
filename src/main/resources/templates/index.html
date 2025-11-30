@@ -74,29 +74,23 @@
             <h5 class="card-title">Your Files</h5>
             <ul class="list-group list-group-flush">
                 <li th:each="file : ${files}" th:object="${file}" class="list-group-item">
-                    <!-- Проверяем, что s3Key не null перед обработкой -->
                     <div th:if="*{s3Key != null}" class="d-flex justify-content-between align-items-center">
                         <div>
                             <strong th:text="*{originalFilename}">Filename</strong> - Size: <span th:text="*{sizeBytes}">Size</span> bytes
-                            <!-- Отладочный вывод s3Key (можно убрать) -->
-                            <!-- <small class="text-muted">S3 Key: <span th:text="*{s3Key}">S3Key</span></small> -->
                         </div>
                         <div class="btn-group" role="group">
                             <form th:action="@{/share}" method="post" style="display: inline;">
-                                <!-- Извлекаем ID (UUID) из s3Key -->
                                 <input type="hidden" name="fileId" th:value="*{s3Key.substring(s3Key.lastIndexOf('/') + 1)}"/>
                                 <input type="hidden" name="apiKey" th:value="${apiKey} ?: 'user-12345'"/>
                                 <button type="submit" class="btn btn-sm btn-outline-primary">Share</button>
                             </form>
                             <form th:action="@{/delete}" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this file?');">
-                                <!-- Извлекаем ID (UUID) из s3Key -->
                                 <input type="hidden" name="fileId" th:value="*{s3Key.substring(s3Key.lastIndexOf('/') + 1)}"/>
                                 <input type="hidden" name="apiKey" th:value="${apiKey} ?: 'user-12345'"/>
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
                             </form>
                         </div>
                     </div>
-                    <!-- Опционально: сообщение об ошибке для файла с null s3Key -->
                     <div th:unless="*{s3Key != null}" class="d-flex justify-content-between align-items-center">
                         <div class="text-danger">
                             <strong>Error:</strong> File record with ID <span th:text="*{id}">ID</span> has a null S3 key.

@@ -15,8 +15,8 @@ public class FileInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "s3_key", nullable = false, unique = true) // Убедимся, что не может быть null
-    private String s3Key; // Ключ в S3, например files/user-123/abc-123-456
+    @Column(name = "s3_key", nullable = false, unique = true)
+    private String s3Key;
 
     @Column(name = "original_filename", nullable = false)
     private String originalFilename;
@@ -24,7 +24,7 @@ public class FileInfo {
     @Column(name = "size_bytes", nullable = false)
     private Long sizeBytes;
 
-    @Column(name = "api_key", nullable = false, updatable = false) // Владелец
+    @Column(name = "api_key", nullable = false, updatable = false)
     private String apiKey;
 
     @Column(name = "upload_date", nullable = false, updatable = false)
