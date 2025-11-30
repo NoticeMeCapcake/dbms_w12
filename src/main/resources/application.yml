@@ -5,12 +5,12 @@ spring:
   application:
     name: file-exchange-service
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: password
+    url: jdbc:postgresql://localhost:5432/file_exchange_db
+    driver-class-name: org.postgresql.Driver
+    username: db_user
+    password: db_password
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+#    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: update
     show-sql: true # Для отладки SQL
@@ -27,9 +27,15 @@ app:
     endpoint: http://localhost:9000
     access-key: minioadmin
     secret-key: minioadmin
-    region: us-east-1 # MinIO игнорирует, но требуется
+    region: EU_SOUTH_1 # MinIO игнорирует, но требуется
 
 logging:
   level:
     software.amazon.awssdk: DEBUG
     com.example.fileexchange: DEBUG
+
+
+aws:
+  region: EU_SOUTH_1
+
+AWS_REGION: EU_SOUTH_1

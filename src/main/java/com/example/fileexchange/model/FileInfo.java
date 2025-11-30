@@ -15,7 +15,7 @@ public class FileInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "s3_key", nullable = false, unique = true)
+    @Column(name = "s3_key", nullable = false, unique = true) // Убедимся, что не может быть null
     private String s3Key; // Ключ в S3, например files/user-123/abc-123-456
 
     @Column(name = "original_filename", nullable = false)

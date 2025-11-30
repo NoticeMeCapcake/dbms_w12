@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/")
@@ -21,14 +20,12 @@ public class WebController {
 
     private final FileService fileService;
 
-    // Главная страница
     @GetMapping
     public String index(Model model) {
         model.addAttribute("apiKey", "user-12345"); // Пример API ключа для UI
         return "index"; // Thymeleaf template
     }
 
-    // Загрузка файла
     @PostMapping("/upload")
     public String uploadFile(@RequestParam("file") MultipartFile file,
                              @RequestParam("apiKey") String apiKey,
@@ -44,7 +41,6 @@ public class WebController {
         return "index";
     }
 
-    // Получение списка файлов
     @PostMapping("/list")
     public String listFiles(@RequestParam("apiKey") String apiKey, Model model) {
         List<FileInfo> files = fileService.listFiles(apiKey);
@@ -53,7 +49,6 @@ public class WebController {
         return "index";
     }
 
-    // Удаление файла
     @PostMapping("/delete")
     public String deleteFile(@RequestParam("fileId") String fileId,
                              @RequestParam("apiKey") String apiKey,
@@ -69,7 +64,6 @@ public class WebController {
         return "index";
     }
 
-    // Генерация ссылки
     @PostMapping("/share")
     public String generateShareLink(@RequestParam("fileId") String fileId,
                                     @RequestParam("apiKey") String apiKey,

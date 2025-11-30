@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -16,8 +17,8 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 
 import java.io.IOException;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -26,7 +27,7 @@ import java.util.UUID;
 public class FileService {
 
     private final S3Client s3Client;
-    private final S3Presigner s3Presigner; // Для генерации pre-signed URL
+    private final S3Presigner s3Presigner;
     private final FileInfoRepository fileInfoRepository;
 
     @Value("${app.s3.bucket-name}")
@@ -43,8 +44,8 @@ public class FileService {
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(s3Key)
-                .metadata("owner", apiKey)
-                .metadata("filename", originalFilename)
+                .metadata(Map.of("owner", apiKey,
+                                "filename", originalFilename))
                 .build();
 
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
@@ -68,14 +69,6 @@ public class FileService {
                 .orElseThrow(() -> new RuntimeException("File not found or access denied"));
     }
 
-    // Вспомогательный метод для получения FileInfo по S3 ключу и apiKey
-    private FileInfo fileInfoRepository$findByApiKeyAndS3Key(String apiKey, String s3Key) {
-        return fileInfoRepository.findByApiKey(apiKey).stream()
-                .filter(f -> f.getS3Key().equals(s3Key))
-                .findFirst()
-                .orElse(null);
-    }
-
     public String generatePresignedUrl(String fileId, String apiKey, int expiresInSeconds) {
         String s3Key = generateS3KeyFromId(fileId, apiKey);
         if (!fileInfoRepository.existsByS3KeyAndApiKey(s3Key, apiKey)) {
@@ -96,6 +89,7 @@ public class FileService {
         return presignedRequest.url().toString();
     }
 
+    @Transactional
     public void deleteFile(String fileId, String apiKey) {
         String s3Key = generateS3KeyFromId(fileId, apiKey);
         if (!fileInfoRepository.existsByS3KeyAndApiKey(s3Key, apiKey)) {
@@ -109,11 +103,9 @@ public class FileService {
                     .build());
         } catch (S3Exception e) {
             log.error("Error deleting file from S3: {}", e.awsErrorDetails().errorMessage());
-            // Важно: даже если S3 не удалится, удаляем запись из БД
         }
 
-        // Удаляем запись из БД
-        fileInfoRepository.deleteByS3Key(s3Key);
+        fileInfoRepository.deleteByApiKeyAndS3Key(apiKey, s3Key);
     }
 
     public Stats getStats(String apiKey) {
@@ -128,26 +120,14 @@ public class FileService {
         return String.format("files/%s/%s", apiKey, uuid);
     }
 
-    // Восстанавливаем S3 ключ из ID файла (предполагая, что ID - это UUID)
     private String generateS3KeyFromId(String fileId, String apiKey) {
-        // Проверим, похоже ли fileId на UUID
         if (!fileId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")) {
             throw new IllegalArgumentException("Invalid file ID format");
         }
         return String.format("files/%s/%s", apiKey, fileId);
     }
 
-    // Внутренний класс для статистики
-    public static class Stats {
-        private final long totalFiles;
-        private final long totalSizeBytes;
+        public record Stats(long totalFiles, long totalSizeBytes) {
 
-        public Stats(long totalFiles, long totalSizeBytes) {
-            this.totalFiles = totalFiles;
-            this.totalSizeBytes = totalSizeBytes;
-        }
-
-        public long getTotalFiles() { return totalFiles; }
-        public long getTotalSizeBytes() { return totalSizeBytes; }
     }
 }
